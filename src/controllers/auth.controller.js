@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const pool = require('../config/database');
+const jwt = require('jsonwebtoken');
 
 const registrarUsuario = async (req, res) => {
     try {
@@ -140,6 +141,98 @@ const registrarUsuario = async (req, res) => {
     }
 };
 
+const iniciarSesion = async (req, res) => {
+    try {
+        const { correo, password } = req.body;
+
+        // Validar datos obligatorios
+        if (!correo || !password) {
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'El correo y la contraseña son obligatorios'
+            });
+        }
+
+        // Buscar usuario por correo
+        const [usuarios] = await pool.execute(
+            `SELECT
+                id,
+                paterno,
+                materno,
+                nombres,
+                ci,
+                telefono,
+                correo,
+                password,
+                rol
+             FROM usuarios
+             WHERE correo = ?`,
+            [correo.trim().toLowerCase()]
+        );
+
+        if (usuarios.length === 0) {
+            return res.status(401).json({
+                ok: false,
+                mensaje: 'Correo o contraseña incorrectos'
+            });
+        }
+
+        const usuario = usuarios[0];
+
+        // Comparar contraseña con bcrypt
+        const passwordValido = await bcrypt.compare(
+            password,
+            usuario.password
+        );
+
+        if (!passwordValido) {
+            return res.status(401).json({
+                ok: false,
+                mensaje: 'Correo o contraseña incorrectos'
+            });
+        }
+
+        // Generar token JWT
+        const token = jwt.sign(
+            {
+                id: usuario.id,
+                correo: usuario.correo,
+                nombres: usuario.nombres,
+                rol: usuario.rol
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: process.env.JWT_EXPIRES_IN || '2h'
+            }
+        );
+
+        return res.status(200).json({
+            ok: true,
+            mensaje: 'Autenticación exitosa',
+            token,
+            usuario: {
+                id: usuario.id,
+                paterno: usuario.paterno,
+                materno: usuario.materno,
+                nombres: usuario.nombres,
+                ci: usuario.ci,
+                telefono: usuario.telefono,
+                correo: usuario.correo,
+                rol: usuario.rol
+            }
+        });
+    } catch (error) {
+        console.error('Error al iniciar sesión:', error);
+
+        return res.status(500).json({
+            ok: false,
+            mensaje: 'Error interno al iniciar sesión',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
-    registrarUsuario
+    registrarUsuario,
+    iniciarSesion
 };

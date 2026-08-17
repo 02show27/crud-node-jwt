@@ -5,6 +5,7 @@ const cors = require('cors');
 const path = require('path');
 const pool = require('./config/database');
 const authRoutes = require('./routes/auth.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -36,6 +37,7 @@ app.get('/api/prueba', async (req, res) => {
 });
 // Ruta de autenticación
 app.use('/api/auth', authRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 app.use((req, res) => {
     res.status(404).json({
