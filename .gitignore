@@ -1,0 +1,17 @@
+
+# Dependencias
+node_modules/
+
+# Variables privadas
+.env
+
+# Registros
+*.log
+npm-debug.log*
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Configuración de editores
+.vscode/
