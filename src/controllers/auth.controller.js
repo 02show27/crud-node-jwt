@@ -32,7 +32,7 @@ const registrarUsuario = async (req, res) => {
             });
         }
 
-        // Validar rol
+       
         const rolesPermitidos = ['administrador', 'usuario'];
 
         if (!rolesPermitidos.includes(rol)) {
@@ -42,7 +42,7 @@ const registrarUsuario = async (req, res) => {
             });
         }
 
-        // Validar longitud de contraseña
+    
         if (password.length < 6) {
             return res.status(400).json({
                 ok: false,

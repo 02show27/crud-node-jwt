@@ -1,8 +1,8 @@
 {
   "name": "crud-node-jwt",
   "version": "1.0.0",
-  "description": "CRUD de usuarios con Node.js, JWT, bcrypt y MySQL",
-  "main":"src/app.js",
+  "description": "Entrega CRUD Node.js, Sequelize y datos complementarios – Jhonny Tito Castro",
+  "main": "src/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/app.js",
@@ -18,7 +18,10 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
-    "mysql2": "^3.23.3"
+    "mariadb": "^3.5.3",
+    "mysql2": "^3.23.3",
+    "pdfkit": "^0.19.1",
+    "sequelize": "^6.37.8"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

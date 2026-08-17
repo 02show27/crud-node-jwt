@@ -6,6 +6,10 @@ const path = require('path');
 const pool = require('./config/database');
 const authRoutes = require('./routes/auth.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
+const usuarioRoutes = require('./routes/usuario.routes');
+const complementariosRoutes = require('./routes/complementarios.routes');
+
+const { sequelize } = require('./models');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -38,6 +42,8 @@ app.get('/api/prueba', async (req, res) => {
 // Ruta de autenticación
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/complementarios',complementariosRoutes);
 
 app.use((req, res) => {
     res.status(404).json({
@@ -46,6 +52,25 @@ app.use((req, res) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
-});
+sequelize
+    .sync({ alter: true })
+    .then(() => {
+        console.log(
+            'Modelos sincronizados correctamente con MariaDB'
+        );
+
+        app.listen(PORT, () => {
+            console.log(
+                `Servidor está corriendo en el puerto ${PORT}`
+            );
+            console.log(
+                `URL: http://localhost:${PORT}`
+            );
+        });
+    })
+    .catch((error) => {
+        console.error(
+            'Error de conexión o sincronización:',
+            error
+        );
+    });
