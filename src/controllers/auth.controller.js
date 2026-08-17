@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const pool = require('../config/database');
 const jwt = require('jsonwebtoken');
-
+const { Usuario } = require('../models');
 const registrarUsuario = async (req, res) => {
     try {
         const {
@@ -15,7 +15,7 @@ const registrarUsuario = async (req, res) => {
             rol
         } = req.body;
 
-        // Validar campos obligatorios
+        
         if (
             !paterno ||
             !materno ||
@@ -50,7 +50,7 @@ const registrarUsuario = async (req, res) => {
             });
         }
 
-        // Comprobar correo y CI duplicados
+
         const [usuariosExistentes] = await pool.execute(
             `SELECT id, correo, ci
              FROM usuarios
@@ -76,44 +76,30 @@ const registrarUsuario = async (req, res) => {
             }
         }
 
-        // Cifrar contraseña
+       
         const saltRounds = 12;
         const passwordCifrado = await bcrypt.hash(
             password,
             saltRounds
         );
 
-        // Guardar usuario
-        const [resultado] = await pool.execute(
-            `INSERT INTO usuarios
-            (
-                paterno,
-                materno,
-                nombres,
-                ci,
-                telefono,
-                correo,
-                password,
-                rol
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                paterno.trim(),
-                materno.trim(),
-                nombres.trim(),
-                ci.trim(),
-                telefono.trim(),
-                correo.trim().toLowerCase(),
-                passwordCifrado,
-                rol
-            ]
-        );
+  
+const nuevoUsuario = await Usuario.create({
+    paterno: paterno.trim(),
+    materno: materno.trim(),
+    nombres: nombres.trim(),
+    ci: ci.trim(),
+    telefono: telefono.trim(),
+    correo: correo.trim().toLowerCase(),
+    password: passwordCifrado,
+    rol
+});
 
         return res.status(201).json({
             ok: true,
             mensaje: 'Usuario creado correctamente',
             usuario: {
-                id: resultado.insertId,
+                id: nuevoUsuario.id,
                 paterno: paterno.trim(),
                 materno: materno.trim(),
                 nombres: nombres.trim(),
@@ -126,7 +112,8 @@ const registrarUsuario = async (req, res) => {
     } catch (error) {
         console.error('Error al registrar usuario:', error);
 
-        if (error.code === 'ER_DUP_ENTRY') {
+        if (error.code === 'ER_DUP_ENTRY' ||error.name === 'SequelizeUniqueConstraintError') 
+        {
             return res.status(409).json({
                 ok: false,
                 mensaje: 'El correo o CI ya está registrado'
@@ -192,7 +179,7 @@ const iniciarSesion = async (req, res) => {
             });
         }
 
-        // Generar token JWT
+        
         const token = jwt.sign(
             {
                 id: usuario.id,
